@@ -1805,6 +1805,13 @@ add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
 target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
 set_target_properties(${LOVE_EXE_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
 
+add_library(love_shared SHARED src/love.cpp)
+target_link_libraries(love_shared ${LOVE_LIB_NAME})
+set_target_properties(love_shared PROPERTIES 
+    OUTPUT_NAME "love"
+    CLEAN_DIRECT_OUTPUT 1
+)
+
 if(MSVC OR MINGW)
 	add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
 	target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
@@ -1965,31 +1972,3 @@ set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
 ")
 
 include(CPack)
-
-#if defined(_WIN32)
-    #define LOVE_EXPORT __declspec(dllexport)
-#else
-    #define LOVE_EXPORT __attribute__((visibility("default")))
-#endif
-
-extern "C" {
-
-LOVE_EXPORT int love_run_game(const char* game_path) {
-    if (!game_path) return -1;
-
-    char app_name[] = "love";
-    char* path_copy = const_cast<char*>(game_path);
-    char* argv[] = { app_name, path_copy, NULL };
-    int argc = 2;
-
-    int retval = 0;
-    DoneAction done = DONE_QUIT;
-
-    do {
-        done = runlove(argc, argv, retval);
-    } while (done != DONE_QUIT);
-
-    return retval;
-}
-
-} // extern "C"

@@ -1965,3 +1965,31 @@ set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
 ")
 
 include(CPack)
+
+#if defined(_WIN32)
+    #define LOVE_EXPORT __declspec(dllexport)
+#else
+    #define LOVE_EXPORT __attribute__((visibility("default")))
+#endif
+
+extern "C" {
+
+LOVE_EXPORT int love_run_game(const char* game_path) {
+    if (!game_path) return -1;
+
+    char app_name[] = "love";
+    char* path_copy = const_cast<char*>(game_path);
+    char* argv[] = { app_name, path_copy, NULL };
+    int argc = 2;
+
+    int retval = 0;
+    DoneAction done = DONE_QUIT;
+
+    do {
+        done = runlove(argc, argv, retval);
+    } while (done != DONE_QUIT);
+
+    return retval;
+}
+
+} // extern "C"
